@@ -16,7 +16,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -83,6 +82,7 @@ public class DriveSubsystem extends SubsystemBase {
     rightEncoder = rightDrive.getEncoder();
 
 
+    //Set PID values
     leftMotorPID.setP(Constants.LEFT_DRIVE_PID1_P, 1);
     leftMotorPID.setI(Constants.LEFT_DRIVE_PID1_I, 1);
     leftMotorPID.setD(Constants.LEFT_DRIVE_PID1_D, 1);
@@ -101,8 +101,8 @@ public class DriveSubsystem extends SubsystemBase {
     rightDrive.setOpenLoopRampRate(Constants.OPEN_LOOP_RAMP_RATE);
     leftDrive.setOpenLoopRampRate(Constants.OPEN_LOOP_RAMP_RATE);
 
-    // Set the Conversion factors of the encoders from the default units to Meters
-    // and Meters/Second
+    // Set the Conversion factors of the encoders from the default units to meters
+    // and meters/second
     leftEncoder.setPositionConversionFactor(
         Constants.GEAR_RATIO_DRIVE * Math.PI * Constants.DRIVE_WHEEL_DIAMETER);
     leftEncoder.setVelocityConversionFactor(
@@ -205,8 +205,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Uses PID control, as well as a FeedFoward Value to determine how fast to move
-   * each motor to reach a intented target.
+   * Uses PID control, as well as a FeedForward Value to determine the voltage to apply
+   * to each motor to reach target speed.
    * 
    * @param leftSpeed
    * @param rightSpeed
@@ -226,6 +226,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
+   * Directly set voltage of motor controllers.
+   * 
    * @param leftVolts
    * @param rightVolts
    */
@@ -235,16 +237,18 @@ public class DriveSubsystem extends SubsystemBase {
     drive.feed();
   }
 
+
+
   /**
    * 
-   * @return Position travelled in Meters from Gyro.
+   * @return Position travelled in meters from gyro.
    */
   public Pose2d getPose() {
     return odometry.getPoseMeters();
   }
 
   /**
-   * Reset the gyro and encoders on the start of Auto.
+   * Reset the gyro and encoders on the start of auto.
    */
   public void reset() {
     resetGyro();
@@ -253,7 +257,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Reset the Odemetry
+   * Reset the odometry
    * 
    * @param pose - Position on the field
    */
@@ -262,15 +266,6 @@ public class DriveSubsystem extends SubsystemBase {
     odometry.resetPosition(pose, getHeading());
   }
 
-  public void setPose(Pose2d pose) {
-    resetEncoders();
-  }
-
-  public DifferentialDriveWheelSpeeds getCurrentWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(
-        getLeftSpeed(),
-        getRightSpeed());
-  }
 
   /**
    * Setup all the motors each time this class is created.
@@ -281,6 +276,9 @@ public class DriveSubsystem extends SubsystemBase {
     odometry = new DifferentialDriveOdometry(getHeading());
   }
 
+  /**
+   * Update odometry every loop cycle
+   */
   @Override
   public void periodic() {
     odometry.update(getHeading(), getLeftDistance(), getRightDistance());
